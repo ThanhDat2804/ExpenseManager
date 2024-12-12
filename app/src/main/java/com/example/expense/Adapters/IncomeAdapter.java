@@ -70,8 +70,6 @@ public class IncomeAdapter extends RecyclerView.Adapter<IncomeAdapter.ViewHolder
                 popupOptions(holder,holder.getAdapterPosition());
             }
         });
-
-
     }
 
     @Override
@@ -116,6 +114,7 @@ public class IncomeAdapter extends RecyclerView.Adapter<IncomeAdapter.ViewHolder
 
     private void editItem(ViewHolder holder, int adapterPosition) {
         Dialog dialog = new Dialog(context);
+
         dialog.setContentView(R.layout.item_addtransaction);
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -129,50 +128,85 @@ public class IncomeAdapter extends RecyclerView.Adapter<IncomeAdapter.ViewHolder
         TextInputEditText description = dialog.findViewById(R.id.textInputEditText);
         EditText amount = dialog.findViewById(R.id.editText2);
 
-        // Set initial values
+        // Đặt giá trị ban đầu từ danh sách
         title.setText(listData.get(adapterPosition).getTitle());
         amount.setText(listData.get(adapterPosition).getTransammount());
         description.setText(listData.get(adapterPosition).getDescription());
 
-        if (listData.get(adapterPosition).getType().equalsIgnoreCase("Expense")) {
-            income.setEnabled(false);
-            income.setStrokeColor(context.getResources().getColor(R.color.gray));
+        // Kiểm tra trạng thái hiện tại (Income hoặc Expense)
+        String currentType = listData.get(adapterPosition).getType();
+        if ("Income".equalsIgnoreCase(currentType)) {
+            income.setStrokeColor(context.getResources().getColor(R.color.cardTeal));
+            expense.setStrokeColor(context.getResources().getColor(R.color.white));
+            incomecheck = true;
+            expensecheck = false;
+            expense.setEnabled(false); // Khóa nút Expense
+        } else if ("Expense".equalsIgnoreCase(currentType)) {
             expense.setStrokeColor(context.getResources().getColor(R.color.cadRed));
+            income.setStrokeColor(context.getResources().getColor(R.color.white));
+            incomecheck = false;
+            expensecheck = true;
+            income.setEnabled(false); // Khóa nút Income
         }
+
+        // Sự kiện khi nhấn vào Income
+        income.setOnClickListener(view -> {
+            if (!income.isEnabled()) return; // Không làm gì nếu nút bị khóa
+            income.setStrokeColor(context.getResources().getColor(R.color.cardTeal));
+            expense.setStrokeColor(context.getResources().getColor(R.color.white));
+            incomecheck = true;
+            expensecheck = false;
+            expense.setEnabled(false); // Khóa nút Expense
+            income.setEnabled(true); // Đảm bảo nút Income được kích hoạt
+        });
+
+        // Sự kiện khi nhấn vào Expense
+        expense.setOnClickListener(view -> {
+            if (!expense.isEnabled()) return; // Không làm gì nếu nút bị khóa
+            expense.setStrokeColor(context.getResources().getColor(R.color.cadRed));
+            income.setStrokeColor(context.getResources().getColor(R.color.white));
+            incomecheck = false;
+            expensecheck = true;
+            income.setEnabled(false); // Khóa nút Income
+            expense.setEnabled(true); // Đảm bảo nút Expense được kích hoạt
+        });
+
+        dbHelper = new DBHelper(context);
+        prefs = new SharedPrefs(context);
 
         addTrans.setOnClickListener(view -> {
             if (checkValues(title, description, amount)) {
-                String transType = incomecheck ? "Income" : "Expense";
+                try {
+                    String date = listData.get(adapterPosition).getDate();
+                    String type = incomecheck ? "Income" : "Expense";
 
-                dbHelper.editTransaction(
-                        prefs.getStr(Constraints.userUID),
-                        listData.get(adapterPosition).getTransID(),
-                        listData.get(adapterPosition).getDate(),
-                        listData.get(adapterPosition).getMonth(),
-                        listData.get(adapterPosition).getYear(),
-                        amount.getText().toString(),
-                        title.getText().toString(),
-                        description.getText().toString(),
-                        "none",
-                        transType
-                );
+                    dbHelper.editTransaction(
+                            prefs.getStr(Constraints.userUID),
+                            listData.get(adapterPosition).getTransID(),
+                            listData.get(adapterPosition).getDate(),
+                            listData.get(adapterPosition).getMonth(),
+                            listData.get(adapterPosition).getYear(),
+                            amount.getText().toString(),
+                            title.getText().toString(),
+                            description.getText().toString(),
+                            "none",
+                            type
+                    );
 
-                listData.get(adapterPosition).setTransammount(amount.getText().toString());
-                listData.get(adapterPosition).setTitle(title.getText().toString());
-                listData.get(adapterPosition).setDescription(description.getText().toString());
-                listData.get(adapterPosition).setType(transType);
-
-                if (dataChangedListener != null) {
-                    dataChangedListener.onDataChanged();
+                    // Cập nhật dữ liệu hiển thị
+                    listData.get(adapterPosition).setTransammount(amount.getText().toString());
+                    listData.get(adapterPosition).setTitle(title.getText().toString());
+                    listData.get(adapterPosition).setDescription(description.getText().toString());
+                    listData.get(adapterPosition).setType(type);
+                    notifyDataSetChanged();
+                    dialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                notifyDataSetChanged();
-                dialog.dismiss();
             }
         });
-
         dialog.show();
     }
-
 
     private boolean checkValues(EditText title, TextInputEditText description, EditText amount) {
         if(title.getText().toString().isEmpty()){
