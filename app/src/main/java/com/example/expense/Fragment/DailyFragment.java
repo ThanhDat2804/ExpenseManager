@@ -162,6 +162,13 @@ public class DailyFragment extends Fragment {
         expenseRecyclerView.setHasFixedSize(true);
         expenseRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new IncomeAdapter(getContext(), expenseList);
+
+        adapter.setOnDataChangedListener(() -> {
+            // Tải lại dữ liệu khi có thay đổi
+            getExpenseData(numberYear, numberMonth, numberDate);
+            updateBalance();
+        });
+
         expenseRecyclerView.setAdapter(adapter);
         if (expenseList.isEmpty()) {
             notxtExpense.setVisibility(View.VISIBLE);
@@ -171,6 +178,7 @@ public class DailyFragment extends Fragment {
             expenseRecyclerView.setVisibility(View.VISIBLE);
         }
     }
+
 
     private void setDate(int year, int month, int numberdate) {
         final String[] Selected = new String[]{"January", "February", "March", "April",
