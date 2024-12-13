@@ -321,6 +321,18 @@ public class DailyFragment extends Fragment {
         addTrans.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Lấy ngày hiện tại
+                Calendar currentDate = Calendar.getInstance();
+                Calendar selectedDate = Calendar.getInstance();
+                selectedDate.set(numberYear, numberMonth, numberDate);
+
+                // Kiểm tra nếu ngày được chọn là sau ngày hiện tại
+                if (selectedDate.after(currentDate)) {
+                    Toast.makeText(getContext(), "Cannot add transaction for future dates!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Kiểm tra các giá trị nhập vào
                 if (checkValues(title, description, amount)) {
                     try {
                         String date = numberDate + " " + numberMonth + " " + numberYear;
