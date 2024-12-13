@@ -177,7 +177,6 @@ public class IncomeAdapter extends RecyclerView.Adapter<IncomeAdapter.ViewHolder
         addTrans.setOnClickListener(view -> {
             if (checkValues(title, description, amount)) {
                 try {
-                    String date = listData.get(adapterPosition).getDate();
                     String type = incomecheck ? "Income" : "Expense";
 
                     dbHelper.editTransaction(
@@ -193,18 +192,27 @@ public class IncomeAdapter extends RecyclerView.Adapter<IncomeAdapter.ViewHolder
                             type
                     );
 
-                    // Cập nhật dữ liệu hiển thị
+                    // Cập nhật dữ liệu trong danh sách
                     listData.get(adapterPosition).setTransammount(amount.getText().toString());
                     listData.get(adapterPosition).setTitle(title.getText().toString());
                     listData.get(adapterPosition).setDescription(description.getText().toString());
                     listData.get(adapterPosition).setType(type);
+
+                    // Cập nhật giao diện RecyclerView
                     notifyDataSetChanged();
+
+                    // Gửi sự kiện thay đổi
+                    if (dataChangedListener != null) {
+                        dataChangedListener.onDataChanged();
+                    }
+
                     dialog.dismiss();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
+
         dialog.show();
     }
 
@@ -235,6 +243,8 @@ public class IncomeAdapter extends RecyclerView.Adapter<IncomeAdapter.ViewHolder
             incomeTitle=itemView.findViewById(R.id.txt_transactionTitle);
             incomeDescription=itemView.findViewById(R.id.txt_transactionDescription);
             layout=itemView.findViewById(R.id.item_notes_layout);
+
         }
+
     }
 }

@@ -66,7 +66,15 @@ public class ParentMonthlyAdapter extends RecyclerView.Adapter<ParentMonthlyAdap
 
         ChildMonthlyAdapter childItemAdapter = new ChildMonthlyAdapter(
                 parentModelList.get(position).getChildModelList());
+        ChildMonthlyAdapter childAdapter = new ChildMonthlyAdapter(parentModelList.get(position).getChildModelList());
 
+        childAdapter.setOnDataChangedListener(() -> {
+            if (dataChangedListener != null) {
+                dataChangedListener.onDataChanged();
+            }
+        });
+
+        holder.ChildRecyclerView.setAdapter(childAdapter);
         holder.ChildRecyclerView
                 .setLayoutManager(layoutManager);
         holder.ChildRecyclerView

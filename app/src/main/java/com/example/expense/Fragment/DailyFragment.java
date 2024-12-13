@@ -130,12 +130,11 @@ public class DailyFragment extends Fragment {
         adapter = new IncomeAdapter(getContext(), incomeList);
 
         // Set listener for data changes
-        adapter.setOnDataChangedListener(new IncomeAdapter.OnDataChangedListener() {
-            @Override
-            public void onDataChanged() {
-                getIncomeData(numberYear, numberMonth, numberDate);
-                updateBalance();
-            }
+        adapter.setOnDataChangedListener(() -> {
+            // Tải lại dữ liệu
+            getIncomeData(numberYear, numberMonth, numberDate);
+            getExpenseData(numberYear, numberMonth, numberDate);
+            updateBalance();
         });
 
         incomeRecyclerView.setAdapter(adapter);
@@ -384,7 +383,9 @@ public class DailyFragment extends Fragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
-            getFragmentManager().beginTransaction().detach(this).attach(this).commit();
+            getIncomeData(numberYear, numberMonth, numberDate);
+            getExpenseData(numberYear, numberMonth, numberDate);
+            updateBalance();
         }
     }
 }
